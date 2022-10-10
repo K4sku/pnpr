@@ -35,7 +35,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
 
 # setup rbenv and install ruby
 USER webapp
-ARG RUBY_VERSION=2.6.10
+ARG RUBY_VERSION=2.7.2
 RUN git clone https://github.com/sstephenson/rbenv.git /home/webapp/.rbenv && \
     git clone https://github.com/sstephenson/ruby-build.git /home/webapp/.rbenv/plugins/ruby-build && \
     echo "export PATH=/home/webapp/.rbenv/bin:/home/webapp/.rbenv/shims:\$PATH" >> /home/webapp/.bashrc && \
@@ -48,7 +48,7 @@ RUN /home/webapp/.rbenv/bin/rbenv install ${RUBY_VERSION} && \
     /home/webapp/.rbenv/bin/rbenv rehash
 
 # install nodenv
-ARG NODE_VERSION=10.24.1
+ARG NODE_VERSION=12.19.0
 RUN git clone https://github.com/nodenv/nodenv.git /home/webapp/.nodenv && \
     git clone https://github.com/nodenv/node-build.git /home/webapp/.nodenv/plugins/node-build && \
     echo "export PATH=/home/webapp/.nodenv/bin:/home/webapp/.nodenv/shims:\$PATH" >> /home/webapp/.bashrc && \
