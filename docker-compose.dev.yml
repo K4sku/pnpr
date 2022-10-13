@@ -2,6 +2,8 @@ version: '2'
 services:
   server:
     build: .
+    environment:
+      PGPASSWORD: Password1
     ports:
       - "1022:22"
       - "1080:80"
@@ -16,8 +18,6 @@ services:
   postgres_db:
     network_mode: bridge
     image: postgres:14
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: webapp
       POSTGRES_USER: webapp
