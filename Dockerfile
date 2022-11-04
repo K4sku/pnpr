@@ -1,5 +1,5 @@
-FROM --platform=linux/amd64 ubuntu:22.04
-MAINTAINER docker@ipepe.pl
+FROM --platform=linux/amd64 jrei/systemd-ubuntu:22.04
+MAINTAINER cezary.klos+docker@gmail.com
 
 # setup envs
 ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
@@ -35,7 +35,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
 
 # setup rbenv and install ruby
 USER webapp
-ARG RUBY_VERSION=2.7.5
+ARG RUBY_VERSION=2.7.6
 RUN git clone https://github.com/sstephenson/rbenv.git /home/webapp/.rbenv && \
     git clone https://github.com/sstephenson/ruby-build.git /home/webapp/.rbenv/plugins/ruby-build && \
     echo "export PATH=/home/webapp/.rbenv/bin:/home/webapp/.rbenv/shims:\$PATH" >> /home/webapp/.bashrc && \
@@ -50,7 +50,7 @@ RUN /home/webapp/.rbenv/bin/rbenv install ${RUBY_VERSION} && \
 USER root
 
 # install node
-ARG NODE_VERSION=10.24.1
+ARG NODE_VERSION=12.19.0
 RUN apt-get update && apt-get install -y nodejs npm && \
     npm install -g n && n ${NODE_VERSION} && npm install -g npm
 
