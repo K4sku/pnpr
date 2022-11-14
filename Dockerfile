@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu:22.04
 MAINTAINER cezary.klos+docker@gmail.com
 
 # setup envs
@@ -116,4 +116,4 @@ VOLUME "/home/webapp/webapp"
 VOLUME "/home/webapp/.ssh"
 VOLUME "/sys/fs/cgroup"
 EXPOSE 22 80
-CMD ["/docker-entrypoint.sh"]
+CMD ["/lib/systemd/systemd"]
