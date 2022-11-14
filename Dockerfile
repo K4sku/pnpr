@@ -6,8 +6,7 @@ ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
 ENV container docker
 ENV DEBIAN_FRONTEND noninteractive
 
-#systemd based on https://github.com/j8r/dockerfiles/blob/master/systemd/ubuntu/22.04.Dockerfile
-
+# systemd based on https://github.com/j8r/dockerfiles/blob/master/systemd/ubuntu/22.04.Dockerfile
 RUN apt-get update \
     && apt-get install -y systemd systemd-sysv \
     && apt-get clean \
@@ -25,9 +24,6 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /lib/systemd/system/anaconda.target.wants/* \
     /lib/systemd/system/plymouth* \
     /lib/systemd/system/systemd-update-utmp*
-VOLUME [ "/sys/fs/cgroup" ]
-
-
 
 # setup locale for postgres and other packages
 RUN apt-get upgrade -y && apt-get install -y locales && \
@@ -118,6 +114,6 @@ RUN chmod 700 /docker-entrypoint.sh && apt-get clean && rm -rf /tmp/* /var/tmp/*
 
 VOLUME "/home/webapp/webapp"
 VOLUME "/home/webapp/.ssh"
+VOLUME "/sys/fs/cgroup"
 EXPOSE 22 80
-ENTRYPOINT ["/lib/systemd/systemd"]
 CMD ["/docker-entrypoint.sh"]

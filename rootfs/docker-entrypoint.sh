@@ -1,4 +1,5 @@
 #!/bin/bash
+/lib/systemd/systemd
 
 echo "Load environment variables from /etc/environment"
 source /etc/environment
