@@ -1,11 +1,35 @@
-FROM jrei/systemd-ubuntu:22.04
+FROM ubuntu:22.04
 MAINTAINER cezary.klos+docker@gmail.com
 
+#systemd based on https://github.com/j8r/dockerfiles/blob/master/systemd/ubuntu/22.04.Dockerfile
+ENV container docker
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update \
+    && apt-get install -y systemd systemd-sysv \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN cd /lib/systemd/system/sysinit.target.wants/ \
+    && rm $(ls | grep -v systemd-tmpfiles-setup)
+
+RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
+    /etc/systemd/system/*.wants/* \
+    /lib/systemd/system/local-fs.target.wants/* \
+    /lib/systemd/system/sockets.target.wants/*udev* \
+    /lib/systemd/system/sockets.target.wants/*initctl* \
+    /lib/systemd/system/basic.target.wants/* \
+    /lib/systemd/system/anaconda.target.wants/* \
+    /lib/systemd/system/plymouth* \
+    /lib/systemd/system/systemd-update-utmp*
+VOLUME [ "/sys/fs/cgroup" ]
+
 # setup envs
-ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
 
 # setup locale for postgres and other packages
-RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
+RUN apt-get upgrade -y && apt-get install -y locales && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     echo 'LANG="en_US.UTF-8"' > /etc/default/locale && \
     echo 'LANGUAGE="en_US:en"' >> /etc/default/locale && \
@@ -94,4 +118,5 @@ RUN chmod 700 /docker-entrypoint.sh && apt-get clean && rm -rf /tmp/* /var/tmp/*
 VOLUME "/home/webapp/webapp"
 VOLUME "/home/webapp/.ssh"
 EXPOSE 22 80
+ENTRYPOINT ["/lib/systemd/systemd"]
 CMD ["/docker-entrypoint.sh"]
