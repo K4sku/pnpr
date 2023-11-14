@@ -17,6 +17,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
     logrotate \
     nginx nginx-extras \
     dirmngr gnupg \
+    libjemalloc-dev \
     apt-transport-https ca-certificates \
     openssl libssl-dev libreadline-dev make gcc \
     zlib1g-dev bzip2 software-properties-common \
@@ -35,7 +36,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
 
 # setup rbenv and install ruby
 USER webapp
-ARG RUBY_VERSION=2.7.5
+ARG RUBY_VERSION=2.7.8
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 RUN git clone https://github.com/sstephenson/rbenv.git /home/webapp/.rbenv && \
     git clone https://github.com/sstephenson/ruby-build.git /home/webapp/.rbenv/plugins/ruby-build && \
     echo "export PATH=/home/webapp/.rbenv/bin:/home/webapp/.rbenv/shims:\$PATH" >> /home/webapp/.bashrc && \
@@ -43,18 +45,19 @@ RUN git clone https://github.com/sstephenson/rbenv.git /home/webapp/.rbenv && \
     echo "gem: --no-rdoc --no-ri" > /home/webapp/.gemrc
 RUN /home/webapp/.rbenv/bin/rbenv install ${RUBY_VERSION} && \
     /home/webapp/.rbenv/bin/rbenv global ${RUBY_VERSION} && \
-    /home/webapp/.rbenv/shims/gem install bundler:1.17.3 && \
+    /home/webapp/.rbenv/shims/gem install bundler:2.1.4 && \
     /home/webapp/.rbenv/shims/gem install foreman && \
     /home/webapp/.rbenv/bin/rbenv rehash
 
 USER root
 
 # install node
-ARG NODE_MAJOR_VERSION=10
+ARG NODE_MAJOR_VERSION=12
 # https://github.com/nodesource/distributions/blob/master/README.md#using-debian-as-root-2
 RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR_VERSION}.x | bash - &&\
     apt-get install --no-install-recommends -y nodejs &&  \
     apt-get clean && rm -rf  /tmp/* /var/tmp/*
+RUN npm install -g yarn
 
 # setup passenger-prometheus monitoring
 COPY --from=zappi/passenger-exporter:1.0.0 /opt/app/bin/passenger-exporter /usr/local/bin/passenger-exporter
