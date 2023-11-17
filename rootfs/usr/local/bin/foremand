@@ -3,7 +3,7 @@
 require 'socket'
 
 if ARGV.empty?
-  puts "Usage: foremand <start|stop|status>"
+  puts "Usage: foremand <start|stop|status|prekillsidekiq>"
   exit 1
 elsif !['start', 'stop', 'status', 'prekillsidekiq'].include?(command = ARGV[0].downcase)
   puts "Unknown command. Usage: formand <start|stop|status|prekillsidekiq>"

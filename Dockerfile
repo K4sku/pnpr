@@ -1,5 +1,5 @@
 FROM --platform=linux/amd64 ubuntu:20.04
-MAINTAINER docker@ipepe.pl
+LABEL author="docker@ipepe.pl"
 
 # setup envs
 ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
