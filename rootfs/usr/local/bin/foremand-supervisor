@@ -18,7 +18,8 @@ def start_foreman(io = $stdout, app_env = "production")
 
   Dir.chdir APP_ROOT
   FileUtils.mkdir_p LOG_DIR
-  foreman_cmd = "RAILS_ENV=#{app_env} #{MALLOC_ENV} #{FOREMAN_BIN} start -f #{PROCFILE} -d #{APP_ROOT} #{load_dotenv_if_present(app_env)} > #{LOG_DIR}/foreman.log 2>&1"
+  dotenv_if_present = load_dotenv_if_present(app_env)
+  foreman_cmd = "RAILS_ENV=#{app_env} #{MALLOC_ENV} #{FOREMAN_BIN} start -f #{PROCFILE} -d #{APP_ROOT} #{dotenv_if_present} > #{LOG_DIR}/foreman.log 2>&1"
   cmd_as_webapp = "sh -c \"#{foreman_cmd}\" webapp"
   foreman_pid = spawn(cmd_as_webapp)
   Process.detach(foreman_pid)
@@ -38,6 +39,11 @@ def process_alive?(pidfile)
   rescue Errno::EPERM
     true
   end
+end
+
+def load_dotenv_if_present(app_env)
+  return "-e #{APP_ROOT}/.env.#{app_env}.local" if File.exist?("#{APP_ROOT}/.env.#{app_env}.local")
+  return "-e #{APP_ROOT}/.env.#{app_env}" if File.exist?("#{APP_ROOT}/.env.#{app_env}")
 end
 
 def kill_all_foreman_processes
@@ -161,9 +167,4 @@ elsif ARGV[0].downcase == "run"
 else
   puts "Unknown command. Usage: formand <start|run>"
   exit 1
-end
-
-def load_dotenv_if_present(app_env)
-  return "-e #{APP_ROOT}/.env.#{app_env}.local" if File.exist?("#{APP_ROOT}/.env.#{app_env}.local")
-  return "-e #{APP_ROOT}/.env.#{app_env}" if File.exist?("#{APP_ROOT}/.env.#{app_env}")
 end
