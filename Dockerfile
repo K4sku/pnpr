@@ -1,5 +1,5 @@
 FROM --platform=linux/amd64 ubuntu:20.04
-LABEL author="docker@ipepe.pl"
+LABEL author="docker@cklos.com"
 
 # setup envs
 ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
@@ -11,16 +11,16 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
     echo 'LANGUAGE="en_US:en"' >> /etc/default/locale && \
     apt-get install --no-install-recommends -y  \
     wget nano htop git curl cron gosu psmisc \
-    imagemagick \
+    imagemagick libvips\
     shared-mime-info \
     openssh-server redis \
     logrotate \
     nginx nginx-extras \
     dirmngr gnupg \
-    libjemalloc-dev \
+    libjemalloc-dev libyaml-dev libffi-dev \
     apt-transport-https ca-certificates \
     openssl libssl-dev libreadline-dev make gcc \
-    zlib1g-dev bzip2 software-properties-common \
+    zlib1g-dev bzip2 software-properties-common build-essential \
     postgresql-client g++ openssl libssl-dev libpq-dev && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7 && \
     echo deb https://oss-binaries.phusionpassenger.com/apt/passenger focal main > /etc/apt/sources.list.d/passenger.list && \
@@ -34,30 +34,32 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
     echo "webapp:Password1" | chpasswd && \
     mkdir -p /home/webapp/.ssh
 
-# setup rbenv and install ruby
 USER webapp
-ARG RUBY_VERSION=2.7.8
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
+
+# install rust
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
+
+# setup rbenv and install ruby
+ARG RUBY_VERSION=3.2.3
 RUN git clone https://github.com/sstephenson/rbenv.git /home/webapp/.rbenv && \
     git clone https://github.com/sstephenson/ruby-build.git /home/webapp/.rbenv/plugins/ruby-build && \
-    echo "export PATH=/home/webapp/.rbenv/bin:/home/webapp/.rbenv/shims:\$PATH" >> /home/webapp/.bashrc && \
+    echo "export PATH=/home/webapp/.rbenv/bin:/home/webapp/.rbenv/shims:/home/webapp/.cargo/bin:\$PATH" >> /home/webapp/.bashrc && \
     echo "export RBENV_ROOT=/home/webapp/.rbenv" >> /home/webapp/.bashrc && \
     echo "gem: --no-rdoc --no-ri" > /home/webapp/.gemrc
-RUN /home/webapp/.rbenv/bin/rbenv install ${RUBY_VERSION} && \
+RUN RUBY_CONFIGURE_OPTS='--with-jemalloc' /home/webapp/.rbenv/bin/rbenv install ${RUBY_VERSION} && \
     /home/webapp/.rbenv/bin/rbenv global ${RUBY_VERSION} && \
-    /home/webapp/.rbenv/shims/gem install bundler:2.1.4 && \
+    /home/webapp/.rbenv/shims/gem install bundler:2.5.4 && \
     /home/webapp/.rbenv/shims/gem install foreman && \
     /home/webapp/.rbenv/bin/rbenv rehash
 
 USER root
 
 # install node
-ARG NODE_MAJOR_VERSION=12
 # https://github.com/nodesource/distributions/blob/master/README.md#using-debian-as-root-2
-RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR_VERSION}.x | bash - &&\
-    apt-get install --no-install-recommends -y nodejs &&  \
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &&\
+    apt-get install --no-install-recommends -y nodejs=20.12.1-1nodesource1 &&  \
     apt-get clean && rm -rf  /tmp/* /var/tmp/*
-RUN npm install -g yarn
+RUN npm install -g yarn@1.22.19
 
 # setup passenger-prometheus monitoring
 COPY --from=zappi/passenger-exporter:1.0.0 /opt/app/bin/passenger-exporter /usr/local/bin/passenger-exporter
@@ -80,7 +82,6 @@ ARG NODE_ENV=production
 ARG FRIENDLY_ERROR_PAGES=off
 
 RUN echo "RUBY_VERSION=${RUBY_VERSION}" >> /erb.templates/templates/etc-environment.rb && \
-    echo "NODE_MAJOR_VERSION=${NODE_MAJOR_VERSION}" >> /erb.templates/templates/etc-environment.rb && \
     echo "RAILS_ENV=${RAILS_ENV}" >> /erb.templates/templates/etc-environment.rb && \
     echo "NODE_ENV=${NODE_ENV}" >> /erb.templates/templates/etc-environment.rb && \
     echo "FRIENDLY_ERROR_PAGES=${FRIENDLY_ERROR_PAGES}" >> /erb.templates/templates/etc-environment.rb
