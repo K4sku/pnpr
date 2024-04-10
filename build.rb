@@ -17,5 +17,3 @@ puts "Building #{image_name}"
         --build-arg RAILS_ENV=#{env_level} \
         --build-arg NODE_ENV=#{env_level} \
         --build-arg FRIENDLY_ERROR_PAGES=#{friendly_error_pages}`
-puts "Pushing #{image_name}"
-`docker push "#{image_name}"`

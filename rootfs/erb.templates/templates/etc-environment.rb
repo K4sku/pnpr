@@ -10,22 +10,18 @@ end.map do |line|
   line.split("=")
 end.to_h
 
-ENV_RUBY_VERSION = ENV.fetch("RUBY_VERSION", parsed_data["RUBY_VERSION"]) || "2.3.1"
-NODE_VERSION = ENV.fetch("NODE_VERSION", parsed_data["NODE_VERSION"]) || "10"
+ENV_RUBY_VERSION = ENV.fetch("RUBY_VERSION", parsed_data["RUBY_VERSION"]) || "3.2.3"
 RAILS_ENV = ENV.fetch("RAILS_ENV", parsed_data["RAILS_ENV"] || "production")
 NODE_ENV = ENV.fetch("NODE_ENV", parsed_data["NODE_ENV"] || "production")
 FRIENDLY_ERROR_PAGES = ENV.fetch("PASSENGER_FRIENDLY_ERROR_PAGES",
                                  parsed_data["FRIENDLY_ERROR_PAGES"]) || "off"
-MALLOC_ENV = 'MALLOC_ARENA_MAX=2' unless ENV.fetch('WITHOUT_MALLOC_ARENA_MAX', false)
 
 TEMPLATE = <<~ERB.freeze
   PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
   RUBY_VERSION=<%= RUBY_VERSION %>
-  NODE_VERSION=<%= NODE_VERSION %>
   RAILS_ENV=<%= RAILS_ENV %>
   NODE_ENV=<%= NODE_ENV %>
   FRIENDLY_ERROR_PAGES=<%= FRIENDLY_ERROR_PAGES %>
-  <%= MALLOC_ENV %>
 ERB
 
 DATA

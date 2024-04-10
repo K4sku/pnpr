@@ -1,7 +1,5 @@
 source 'http://rubygems.org'
 
-ruby '~> 2.7'
+ruby '~> 3.1'
 
-gem 'rest-client'
-gem 'rspec'
 gem 'rubyzip', '~> 2.3'

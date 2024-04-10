@@ -1,3 +1,16 @@
+FROM --platform=linux/amd64 ubuntu:20.04 AS nginx_brotli_modules
+ENV DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
+
+RUN apt-get update && apt-get install --no-install-recommends -y  \
+    wget git gcc cmake libpcre3 libpcre3-dev make libbrotli-dev \
+    zlib1g zlib1g-dev openssl libssl-dev ca-certificates
+RUN wget https://nginx.org/download/nginx-1.18.0.tar.gz && \
+    tar zxvf nginx-1.18.0.tar.gz && \
+    git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli.git
+RUN cd nginx-1.18.0 && \
+    ./configure --with-compat --add-dynamic-module=../ngx_brotli && \
+    make modules
+
 FROM --platform=linux/amd64 ubuntu:20.04
 LABEL author="docker@cklos.com"
 
@@ -11,13 +24,13 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
     echo 'LANGUAGE="en_US:en"' >> /etc/default/locale && \
     apt-get install --no-install-recommends -y  \
     wget nano htop git curl cron gosu psmisc \
-    imagemagick libvips\
+    imagemagick libvips brotli \
     shared-mime-info \
     openssh-server redis \
     logrotate \
     nginx nginx-extras \
     dirmngr gnupg \
-    libjemalloc-dev libyaml-dev libffi-dev \
+    libjemalloc-dev libyaml-dev libffi-dev rustc \
     apt-transport-https ca-certificates \
     openssl libssl-dev libreadline-dev make gcc \
     zlib1g-dev bzip2 software-properties-common build-essential \
@@ -34,20 +47,21 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y locales && \
     echo "webapp:Password1" | chpasswd && \
     mkdir -p /home/webapp/.ssh
 
-USER webapp
+# copy brotli nginx module
+COPY --from=nginx_brotli_modules /nginx-1.18.0/objs/*.so /usr/share/nginx/modules
 
-# install rust
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
+USER webapp
 
 # setup rbenv and install ruby
 ARG RUBY_VERSION=3.2.3
 RUN git clone https://github.com/sstephenson/rbenv.git /home/webapp/.rbenv && \
     git clone https://github.com/sstephenson/ruby-build.git /home/webapp/.rbenv/plugins/ruby-build && \
-    echo "export PATH=/home/webapp/.rbenv/bin:/home/webapp/.rbenv/shims:/home/webapp/.cargo/bin:\$PATH" >> /home/webapp/.bashrc && \
+    echo "export PATH=/home/webapp/.rbenv/bin:/home/webapp/.rbenv/shims:\$PATH" >> /home/webapp/.bashrc && \
     echo "export RBENV_ROOT=/home/webapp/.rbenv" >> /home/webapp/.bashrc && \
     echo "gem: --no-rdoc --no-ri" > /home/webapp/.gemrc
-RUN RUBY_CONFIGURE_OPTS='--with-jemalloc' /home/webapp/.rbenv/bin/rbenv install ${RUBY_VERSION} && \
-    /home/webapp/.rbenv/bin/rbenv global ${RUBY_VERSION} && \
+
+RUN RUBY_CONFIGURE_OPTS="--with-jemalloc --enable-yjit" /home/webapp/.rbenv/bin/rbenv install 3.2.3
+RUN /home/webapp/.rbenv/bin/rbenv global 3.2.3 && \
     /home/webapp/.rbenv/shims/gem install bundler:2.5.4 && \
     /home/webapp/.rbenv/shims/gem install foreman && \
     /home/webapp/.rbenv/bin/rbenv rehash

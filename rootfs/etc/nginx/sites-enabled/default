@@ -12,6 +12,7 @@ server {
         passenger_enabled on;
         passenger_user webapp;
         passenger_app_group_name rails_webapp;
+        passenger_preload_bundler on;
         passenger_app_env production;
         passenger_friendly_error_pages off;
         passenger_max_requests 10000;
@@ -21,6 +22,7 @@ server {
         passenger_enabled on;
         passenger_user webapp;
         passenger_app_group_name rails_action_cable;
+        passenger_preload_bundler on;
         passenger_app_env production;
         passenger_friendly_error_pages off;
         passenger_env_var RAILS_CABLE_PROCESS true;
@@ -28,8 +30,10 @@ server {
     }
 
     location ~ ^/(assets|fonts|system)/|favicon.ico|robots.txt {
-        gzip_static on;
         gzip on;
+        gzip_static on;
+        brotli on;
+        brotli_static on;
         expires max;
         add_header Cache-Control public;
     }

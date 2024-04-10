@@ -38,6 +38,7 @@ TEMPLATE = <<~ERB.freeze
           passenger_enabled on;
           passenger_user webapp;
           passenger_app_group_name rails_webapp;
+          passenger_preload_bundler on;
           passenger_app_env <%= RAILS_ENV %>;
           passenger_friendly_error_pages <%= FRIENDLY_ERROR_PAGES %>;
           passenger_max_requests <%= PASSENGER_MAX_REQUESTS %>;
@@ -48,6 +49,7 @@ TEMPLATE = <<~ERB.freeze
           passenger_enabled on;
           passenger_user webapp;
           passenger_app_group_name rails_action_cable;
+          passenger_preload_bundler on;
           passenger_app_env <%= RAILS_ENV %>;
           passenger_friendly_error_pages <%= FRIENDLY_ERROR_PAGES %>;
           passenger_max_requests <%= PASSENGER_MAX_REQUESTS %>;
@@ -57,8 +59,10 @@ TEMPLATE = <<~ERB.freeze
       <% end %>
 
       location ~ ^/(assets|fonts|system)/|favicon.ico|robots.txt {
-          gzip_static on;
           gzip on;
+          gzip_static on;
+          brotli on;
+          brotli_static on;
           expires max;
           add_header Cache-Control public;
       }

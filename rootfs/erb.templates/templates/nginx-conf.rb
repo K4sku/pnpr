@@ -65,6 +65,25 @@ TEMPLATE = <<~ERB.freeze
   	# gzip_http_version 1.1;
   	# gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
 
+    ##
+    # Brotli Settings
+    # https://github.com/google/ngx_brotli?tab=readme-ov-file#configuration-directives
+    ##
+
+    brotli on;
+    # brotli_static on;
+    # brotli_buffers 32 4k;
+    # brotli_comp_level 6;
+    # brotli_window 512k;
+    # brotli_min_length 20;
+
+    # File types to compress
+    brotli_types application/atom+xml application/javascript application/json application/rss+xml
+                 application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype
+                 application/x-font-ttf application/x-javascript application/xhtml+xml application/xml
+                 font/eot font/opentype font/otf font/truetype image/svg+xml image/vnd.microsoft.icon
+                 image/x-icon image/x-win-bitmap text/css text/javascript text/plain text/xml;
+
   	##
   	# nginx-naxsi config
   	##
