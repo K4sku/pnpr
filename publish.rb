@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 ruby_version = "3.2.3"
-node_version = "20.12.1"
 
-image_tag = "prod-u20.04-r#{ruby_version}_jema_yjit-n#{node_version}"
+image_tag = "prod-u20.04-r#{ruby_version}_jema_yjit-n20.12.1"
 image_name = "kasku/pnpr:#{image_tag}"
 env_level = "production"
 friendly_error_pages =
