@@ -16,6 +16,6 @@ SERVICE_NAMES.each do |service_name|
   system("service #{service_name} start")
 end
 
-if SERVICE_NAMES.include?("foremand-supervisor")
+if SERVICE_NAMES.include?(:"foremand-supervisor")
   system("foremand start")
 end
